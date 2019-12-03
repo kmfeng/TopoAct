@@ -173,11 +173,14 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     let html_table = legend_group.append("foreignObject")
         .attr("x", 0)
         .attr("y", -40)
-        .attr("width", "450px")
-        .attr("height", "200px");
+        .attr("width", "400px")
+        .attr("height", "130px");
 
     let table_div = html_table.append("xhtml:div")
-        .style("padding", "20px")
+        .style("padding-top", "10px")
+        .style("padding-left", "5px")
+        .style("padding-bottom", "10px")
+        .style("padding-right", "10px")
         .html(buildTooltipTable(data, data_path, dataset, layer_name));
 
     let orig_imgdiv = d3.select("#original-images");
@@ -506,24 +509,62 @@ function populateModal() {
   }
 
   function modalLabelClicked() {
-    // if d3.selec
     d3.select(this).classed("selected-label", !d3.select(this).classed("selected-label"));
   }
 
   // Modal window
   const modal = d3.select(".modal-body");
+  let sorted_labels = labels.map(d => d[0]).map(x => x.charAt(0).toUpperCase() + x.slice(1)).sort();
 
-  modal.selectAll("div")
-      .data(labels)
+  let groupBy = function (xs, key) {
+    return xs.reduce(function (rv, x) {
+      (rv[key(x)] = rv[key(x)] || []).push(x);
+      return rv;
+    }, {});
+  };
+  console.log(groupBy(sorted_labels, function (x) {
+    return x.charAt(0)
+  }));
+  let grouped_labels = groupBy(sorted_labels, function (x) {
+    return x.charAt(0)
+  });
+
+  // modal.selectAll("div")
+  //     .data(labels)
+  //     .enter()
+  //     .append("div")
+  //     .attr("id", d => d[0].replace(" ", "-"))
+  //     .classed("modal-label", true)
+  //     .classed("clickable", true)
+  //     // .append("span")
+  //     .html(d => d[0])
+  //     .attr('data-classes', d => d)
+  //     .on("click", modalLabelClicked);
+
+  let modal_directory_divs = modal.selectAll("div")
+      .data(Object.entries(grouped_labels))
       .enter()
       .append("div")
-      .attr("id", d => d[0].replace(" ", "-"))
+      .attr("id", d => "modal-directory-" + d[0])
+      // .style("border-bottom", "1px solid grey")
+      .style("padding-top", "10px")
+      .style("padding-bottom", "10px");
+
+  let modal_class_sections = modal_directory_divs.append("div")
+      .classed("modal-directory-listing", true)
+      .html(d => d[0]);
+
+  let modal_class_labels = modal_directory_divs.append("div")
+      .style("padding-left", "2em")
+      .selectAll("span")
+      .data(d => d[1])
+      .enter()
+      .append("span")
+      // .attr("id", x => x[0].replace(" ", "-"))
+      // .attr("data-classes", x => x)
       .classed("modal-label", true)
       .classed("clickable", true)
-      // .append("span")
-      .html(d => d[0])
-      .attr('data-classes', d => d)
-      .on("click", modalLabelClicked);
+      .html(x => x);
 }
 
 function make_modal_window() {

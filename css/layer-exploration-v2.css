@@ -244,6 +244,8 @@ input[type=text] {
   padding: 0;
   border: 1px solid #888;
   width: 80%;
+  height: 90%;
+  overflow: scroll;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   -webkit-animation-name: animatetop;
   -webkit-animation-duration: 0.4s;
@@ -300,8 +302,27 @@ input[type=text] {
 }
 
 .modal-body {
-  padding: 2px 5px;
+  padding: 2px 1em;
   margin-top: 10px;
+}
+
+.modal-directory-listing {
+  border-radius: 50%;
+  /*border: 1px solid black;*/
+  color: var(--modal-label-text-color);
+  display: inline-block;
+  font-weight: bolder;
+  font-size: 1.5em;
+  height: 35px;
+  width: 35px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 5px;
+  margin: 10px;
+  white-space: nowrap;
+  background-color: var(--layer-bg-color-selected);
+  box-shadow: 1px 1px 10px -2px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 1px 1px 10px -2px rgba(0, 0, 0, 0.5);
 }
 
 .modal-label {
@@ -314,6 +335,7 @@ input[type=text] {
   vertical-align: middle;
   border-radius: 5px;
   font-weight: bolder;
+  white-space: nowrap;
   background-color: var(--modal-label-bg-color);
   color: var(--modal-label-text-color);
   box-shadow: 1px 1px 10px -2px rgba(0, 0, 0, 0.5);
@@ -351,9 +373,7 @@ table.fixed {
   table-layout: auto;
   width: 350px;
   padding-left: 5px;
-  background-color: #000000;
-  opacity: 0.8;
-
+  background-color: rgba(0, 0, 0, 0.85);
   color: var(--title-text-color);
   border-radius: 5px;
   -webkit-box-shadow: 10px 10px 20px 0px rgba(0, 0, 0, 0.5);
@@ -364,9 +384,7 @@ table.fixed {
 table.fixed td:nth-of-type(1) {
   text-overflow: ellipsis;
   width: 100px;
-  white-space: nowrap
+  white-space: nowrap;
+  display: block;
+  overflow: hidden;
 }
-
-/*Setting the width of column 1.*/
-/*table.fixed td:nth-of-type(2) {width:25%;}!*Setting the width of column 2.*!*/
-/*table.fixed td:nth-of-type(3) {width:25%;}!*Setting the width of column 3.*!*/
