@@ -239,7 +239,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     let avg_image_path = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`;
     act_imgdiv.append("div")
         .attr("id", "averaged-image")
-        .html("Averaged image <hr style='width: 100%'>")
+        .html("Averaged activation image <hr style='width: 100%'>")
         .append("img")
         .attr("onerror", "this.src=''")
         .attr("src", avg_image_path)
