@@ -93,9 +93,6 @@ function buildLayers() {
 function buildDatasetDropdown() {
   function datasetChanged() {
     let {dataset, layer} = getCurrentParams();
-    if (dataset === 'overlap-30') {
-      layer = layer + '_30';
-    }
     console.log(dataset, layer);
     draw_mapper(layer, dataset, "mapper-svg", awesomplete_inst);
   }
@@ -126,6 +123,8 @@ function buildDatasetDropdown() {
 }
 
 async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_instace) {
+
+  const data_path = "./data";
 
   function handleMouseClick(data) {
     handleMouseOut(data);
@@ -205,13 +204,13 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
         .attr("height", bounding_box.height + 35 + image_height)
         .attr("opacity", 0.8)
         .attr("stroke", "#999");
-    console.log(bounding_box)
+
     legend_text_group.append("image")
         .attr("x", bounding_box.width / 2)
         .attr("y", bounding_box.height)
         // .attr("x", "50%")
         .attr("height", image_height)
-        .attr("xlink:href", `data/final_mapper_outputs/${layer_name}/${data.id}/opt/avg.jpg`);
+        .attr("xlink:href", `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`);
 
     // legend_text_group.append("line")
     //     .attr("id", "separator1")
@@ -223,7 +222,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
 
     for (let i = 0; i < data["top_classes"].length; i++) {
       for (let j = 0; j < 5; j++) {
-        let img_src = `data/final_mapper_outputs/${layer_name}/${data.id}/icons/${data["top_classes"][i]}_${j}.jpg`;
+        let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/icons/${data["top_classes"][i]}_${j}.jpg`;
         orig_image_list.push(img_src);
       }
     }
@@ -240,7 +239,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
 
     for (let i = 0; i < data["top_classes"].length; i++) {
       for (let j = 0; j < 5; j++) {
-        let img_src = `data/final_mapper_outputs/${layer_name}/${data.id}/opt/${data["top_classes"][i]}${j}.jpg`;
+        let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/${data["top_classes"][i]}${j}.jpg`;
         act_image_list.push(img_src);
       }
     }
@@ -254,7 +253,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
         .attr("style", "margin: 1px; width:19%");
 
     // Add average activation image
-    let avg_image_path = `data/final_mapper_outputs/${layer_name}/${data.id}/opt/avg.jpg`;
+    let avg_image_path = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`;
     act_imgdiv.append("div")
         .attr("id", "averaged-image")
         .html("Averaged image <hr style='width: 100%'>")
@@ -264,10 +263,9 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
         .attr("style", "margin: 1px; width:30%; display: block; margin: auto; image-rendering: pixelated;");
 
     function create_image_list(layer_name, cluster_id) {
-      let base_path = "data/final_mapper_outputs/";
       let image_list = [];
       for (let i = 0; i < 15; i++) {
-        let img_src = `${base_path + layer_name}/${cluster_id}/opt/optimized_image_${i}.jpg`;
+        let img_src = `${data_path}/${dataset}/${layer_name}/${cluster_id}/opt/optimized_image_${i}.jpg`;
         image_list.push(img_src);
       }
       return image_list;
@@ -317,24 +315,26 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     return link_data["intersection"] / (source_size + target_size - link_data["intersection"]);
   }
 
+  function checkStrInArr(strArray, searchTerm) {
+    return strArray["top_classes"].flat().join(", ").split(",").map(d => d.trim()).includes(searchTerm.trim());
+  }
+
+  // -------------- Cleanup -------------------
   // Remove the previous force-directed graph
   d3.select("#mapper-svg").selectAll("g").remove();
-
   // Clear selection-details
   handleMouseOut("");
-
   // Clear searchbox
   d3.select("#searchbox").node().value = "";
-
   // Remove disable-styles from modal-labels
   d3.selectAll(".modal-label").classed("modal-label-disabled", false);
+  // ------------ End Cleanup -----------------
 
   // Read the mapper results stored in JSON file
-  let graph_data = await d3.json("data/final_mapper_outputs/" + layer_name + "/output.json");
-  const mapper_svg = d3.select("#mapper-svg")
-      .attr("width", "100%")
-      .attr("height", "95%");
+  let graph_data = await d3.json(`${data_path}/${dataset}/${layer_name}/output.json`);
+  const mapper_svg = d3.select("#mapper-svg").attr("width", "100%").attr("height", "95%");
 
+  // Click anywhere outside the graph to dismiss the summary box
   mapper_svg.on('click', function () {
     if (d3.event.target.id === "mapper-svg") {
       d3.selectAll(".legend-group").remove();
@@ -349,24 +349,20 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
   let l2normvals = graph_data.nodes.map(d => parseFloat(d["l2NormAvg"]));
   let membership_length = graph_data.nodes.map(d => d["membership"].length);
   let class_names = graph_data.nodes.map(d => d["top_classes"]);
-  let overlaps = graph_data.links.map(jaccard);
-
   // Dedupe and flatten class name
   class_names = [...new Set(class_names.map(d => d.map(x => x.split(","))).flat(2).map(y => y.trim()))];
+  let overlaps = graph_data.links.map(jaccard);
 
-  // Create autocomplete text-box
+  // Populate autocomplete text-box with new class names from the current layer
   awesomeplete_instace.list = class_names;
-
   // Disable all classes not present in current graph
   let modal_labels = d3.selectAll(".modal-label");
   modal_labels.filter(d => d.some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
 
+  // Enable searchbox functionality
+  // On selection from the auto-complete list, trigger cleanup of side-panel
+  // If the searchbox is cleared, restore node and link opacities
   let search_term = d3.select("#searchbox");
-
-  function checkStrInArr(strArray, searchTerm) {
-    return strArray["top_classes"].flat().join(", ").split(",").map(d => d.trim()).includes(searchTerm.trim());
-  }
-
   search_term.on("awesomplete-selectcomplete", function () {
     handleMouseOut("");
     let search_term_val = search_term.node().value;
@@ -378,7 +374,6 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       link.attr("opacity", 0.1);
     }
   });
-
   search_term.on("keyup", function () {
     let search_term_val = search_term.node().value;
     if (search_term_val === "") {
@@ -387,20 +382,22 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     }
   });
 
-
+  // ------------------ Scales -------------------
   let color_scale = d3.scaleSequential(d3.interpolateTurbo).domain(d3.extent(l2normvals));
   color_scale.nice();
+
+  let radius_scale = d3.scaleLog()
+      .domain(d3.extent(membership_length))
+      .range([3, 8]);
 
   let link_strength_scale = d3.scaleLinear()
       .domain(d3.extent(overlaps))
       .range([1, 10]);
 
   let links_color_scale = d3.scaleSequential(d3.interpolatePlasma).domain(d3.extent(overlaps));
-    links_color_scale.nice();
+  links_color_scale.nice();
+  // ------------------ End-Scales -------------------
 
-  let radius_scale = d3.scaleLog()
-      .domain(d3.extent(membership_length))
-      .range([3, 8]);
 
   const mapper_svg_g = mapper_svg.append("g").attr("id", "mapper-svg-g");
 
@@ -439,8 +436,6 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .enter()
       .append("g");
 
-  // node.on("click", handleMouseClick);
-
   node.append("circle")
       .attr("r", d => radius_scale(d["membership"].length))
       .attr("fill", d => color_scale(d["l2NormAvg"]))
@@ -450,7 +445,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
 
   let img_size = 20;
   node.append("image")
-      .attr("xlink:href", d => `data/final_mapper_outputs/${layer_name}/${d.id}/opt/avg.jpg`)
+      .attr("xlink:href", d => `${data_path}/${dataset}/${layer_name}/${d.id}/opt/avg.jpg`)
       .attr("x", -img_size / 2)
       .attr("y", -img_size / 2)
       .attr("width", img_size)
