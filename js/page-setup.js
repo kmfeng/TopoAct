@@ -540,7 +540,6 @@ function getCurrentParams() {
   return {layer: selected_layer.node().id, dataset: selected_dataset.node().value};
 }
 
-
 function populateModal() {
   function smallestString(strArr) {
     // console.log(strArr)
