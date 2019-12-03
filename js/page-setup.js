@@ -93,7 +93,6 @@ function buildLayers() {
 function buildDatasetDropdown() {
   function datasetChanged() {
     let {dataset, layer} = getCurrentParams();
-    console.log(dataset, layer);
     draw_mapper(layer, dataset, "mapper-svg", awesomplete_inst);
   }
 
@@ -146,6 +145,24 @@ function buildTooltipTable(data, data_path, dataset, layer_name) {
   } catch (e) {
     console.log(e);
   }
+}
+
+function resetSelection() {
+  console.log("resetSelection called");
+  // Set node and link opacities
+  d3.selectAll("#node-group>g").attr("opacity", 1);
+  d3.selectAll('#link-group').attr("opacity", 1);
+
+  // Remove the summary-box
+  d3.selectAll(".legend-group").remove();
+
+  // Clear all the selected modal-label boxes
+  d3.selectAll(".modal-label").classed("selected-label", false);
+
+  // Clear the selection from search-box
+  let searchbox = d3.select("#searchbox");
+  searchbox.node().value = "";
+  // searchbox.dispatch("keyup");
 }
 
 async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_instance) {
@@ -254,7 +271,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
   function handleMouseOut(data) {
     if (data !== '') {
       node.attr("opacity", 1);
-      link.attr("opacity", 1);
+      d3.selectAll('#link-group').attr("opacity", 1);
     }
 
     d3.selectAll("circle").attr("stroke-width", "1px")
@@ -321,9 +338,12 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
 
   // Populate autocomplete text-box with new class names from the current layer
   awesomeplete_instance.list = class_names;
+
   // Disable all classes not present in current graph
+  // Or remove them all together
   let modal_labels = d3.selectAll(".modal-label");
-  modal_labels.filter(d => d.some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
+  // modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
+  modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).remove();
 
   // Enable searchbox functionality
   // On selection from the auto-complete list, trigger cleanup of side-panel
@@ -333,18 +353,16 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     handleMouseOut("");
     let search_term_val = search_term.node().value;
     if (search_term_val === "") {
-      node.attr("opacity", 1);
-      link.attr("opacity", 1)
+      resetSelection();
     } else {
       node.filter(d => !checkStrInArr(d, search_term_val)).attr("opacity", 0.1);
-      link.attr("opacity", 0.1);
+      d3.selectAll('#link-group').attr("opacity", 0.1);
     }
   });
   search_term.on("keyup", function () {
     let search_term_val = search_term.node().value;
     if (search_term_val === "") {
-      node.attr("opacity", 1);
-      link.attr("opacity", 1);
+      resetSelection();
     }
   });
 
@@ -504,7 +522,6 @@ function getCurrentParams() {
 
 function populateModal() {
   function smallestString(strArr) {
-    // console.log(strArr)
     return strArr[strArr.indexOf(Math.max(strArr.split(",").map(x => x.length)))];
   }
 
@@ -514,7 +531,10 @@ function populateModal() {
 
   // Modal window
   const modal = d3.select(".modal-body");
-  let sorted_labels = labels.map(d => d[0]).map(x => x.charAt(0).toUpperCase() + x.slice(1)).sort();
+  // let sorted_labels = labels.map(d => d[0]).map(x => x.charAt(0).toUpperCase() + x.slice(1)).sort();
+  let sorted_labels = labels.map(x => [x[0].charAt(0).toUpperCase(), x]).sort(function (a, b) {
+    return a[0] > b[0] ? 1 : -1;
+  });
 
   let groupBy = function (xs, key) {
     return xs.reduce(function (rv, x) {
@@ -522,24 +542,10 @@ function populateModal() {
       return rv;
     }, {});
   };
-  console.log(groupBy(sorted_labels, function (x) {
-    return x.charAt(0)
-  }));
-  let grouped_labels = groupBy(sorted_labels, function (x) {
-    return x.charAt(0)
-  });
 
-  // modal.selectAll("div")
-  //     .data(labels)
-  //     .enter()
-  //     .append("div")
-  //     .attr("id", d => d[0].replace(" ", "-"))
-  //     .classed("modal-label", true)
-  //     .classed("clickable", true)
-  //     // .append("span")
-  //     .html(d => d[0])
-  //     .attr('data-classes', d => d)
-  //     .on("click", modalLabelClicked);
+  let grouped_labels = groupBy(sorted_labels, function (x) {
+    return x[0];
+  });
 
   let modal_directory_divs = modal.selectAll("div")
       .data(Object.entries(grouped_labels))
@@ -560,11 +566,10 @@ function populateModal() {
       .data(d => d[1])
       .enter()
       .append("span")
-      // .attr("id", x => x[0].replace(" ", "-"))
-      // .attr("data-classes", x => x)
       .classed("modal-label", true)
       .classed("clickable", true)
-      .html(x => x);
+      .html(x => x[1][0])
+      .on("click", modalLabelClicked);
 }
 
 function make_modal_window() {
@@ -589,16 +594,42 @@ function make_modal_window() {
   // When the user clicks on <span> (x), close the modal
   span.onclick = function () {
     modal.style.display = "none";
-    let selected_labels = d3.selectAll(".selected-label").data().flat();
-    let nodes = d3.selectAll("#node-group>g");
-    nodes.attr("opacity", 1);
-    nodes.filter(d => array_intersect(d["top_classes"], selected_labels).length === 0).attr("opacity", 0.1);
+    let selected_labels = d3.selectAll(".selected-label").data().map(x => x[1]).flat();
+
+    // set searchbox to selected-labels value
+    d3.select("#searchbox").node().value = selected_labels.join(", ");
+
+    if (selected_labels.length !== 0) {
+      let nodes = d3.selectAll("#node-group>g");
+      let links = d3.selectAll("#link-group");
+      d3.selectAll(".legend-group").remove();
+      nodes.attr("opacity", 1);
+      nodes.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+      links.attr("opacity", 0.1);
+    } else {
+      resetSelection();
+    }
   };
 
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = function (event) {
     if (event.target === modal) {
       modal.style.display = "none";
+      let selected_labels = d3.selectAll(".selected-label").data().map(x => x[1]).flat();
+
+      // set searchbox to selected-labels value
+      d3.select("#searchbox").node().value = d3.selectAll(".selected-label").data().map(x => x[1][0]).join(", ");
+
+      if (selected_labels.length !== 0) {
+        let nodes = d3.selectAll("#node-group>g");
+        let links = d3.selectAll("#link-group");
+        d3.selectAll(".legend-group").remove();
+        nodes.attr("opacity", 1);
+        nodes.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+        links.attr("opacity", 0.1);
+      } else {
+        resetSelection();
+      }
     }
   }
 }
@@ -609,7 +640,6 @@ async function wrapper() {
     // Read the label file
     labels = Object.values(await d3.json("data/labels.json"));
     labels = labels.map(x => x.split(",").map(y => y.trim()));
-    // console.log(labels);
     buildLayers();
     buildDatasetDropdown();
     make_modal_window();

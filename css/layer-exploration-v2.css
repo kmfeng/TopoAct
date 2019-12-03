@@ -83,7 +83,7 @@ body {
 
   grid-area: toolbar;
   display: grid;
-  grid-template-columns: 1fr 1px 0.3fr 1px 0.3fr;
+  grid-template-columns: 1fr 1px 0.3fr 1px 0.433fr;
   grid-template-rows: 1fr;
   grid-template-areas: "toolbar-layer-list separator1 toolbar-dataset separator2 searchbox-div";
   align-items: center;
