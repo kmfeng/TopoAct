@@ -180,6 +180,7 @@ body {
   grid-template-areas: "top-classes" "original-images" "activation-images";
   grid-row-gap: 2px;
   grid-area: selection-details;
+  overflow-y: scroll;
 }
 
 #top-classes {
@@ -345,3 +346,27 @@ input[type=text] {
 .modal-label-disabled {
   opacity: 0.2;
 }
+
+table.fixed {
+  table-layout: auto;
+  width: 350px;
+  padding-left: 5px;
+  background-color: #000000;
+  opacity: 0.8;
+
+  color: var(--title-text-color);
+  border-radius: 5px;
+  -webkit-box-shadow: 10px 10px 20px 0px rgba(0, 0, 0, 0.5);
+  box-shadow: 10px 10px 20px 0px rgba(0, 0, 0, 0.5);
+}
+
+/*Hide text outside the cell.*/
+table.fixed td:nth-of-type(1) {
+  text-overflow: ellipsis;
+  width: 100px;
+  white-space: nowrap
+}
+
+/*Setting the width of column 1.*/
+/*table.fixed td:nth-of-type(2) {width:25%;}!*Setting the width of column 2.*!*/
+/*table.fixed td:nth-of-type(3) {width:25%;}!*Setting the width of column 3.*!*/

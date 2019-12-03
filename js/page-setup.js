@@ -122,7 +122,33 @@ function buildDatasetDropdown() {
   }
 }
 
-async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_instace) {
+function buildTooltipTable(data, data_path, dataset, layer_name) {
+  try {
+    let top_classes = data["top_classes"];
+    let percents = data["top_class_percents"];
+    let num_rows = data["top_classes"].length;
+    let table = "<table class='fixed'>";
+    // table += "<thead><th>Class</th><th>Percent</th><th>Ratio</th></thead>";
+    for (let i = 0; i < num_rows; i++) {
+      table += "<tr>";
+      let tc = top_classes[i].split(",")[0].trim();
+      let tc_clipped = tc.substr(0, 30) + (tc.length > 30 ? "..." : '');
+      table += `<td>${tc_clipped}</td>`;
+      table += `<td align="center">${percents[i].toFixed(2)}</td>`;
+      table += `<td align="center">${Math.round(percents[i] * data["membership"].length)}/${data["membership"].length}</td>`;
+      if (i === 0) {
+        table += `<td align="center" rowspan='3'><img src='${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg'></img></td>`;
+      }
+      table += "</tr>";
+    }
+    table += "</table>";
+    return table;
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_instance) {
 
   const data_path = "./data";
 
@@ -144,78 +170,15 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     let legend_group = d3.select("g#legend-" + data.id).append("g")
         .attr("class", "legend-group");
 
-    let legend_text_group = legend_group.append("g")
-        .attr("id", "legend-table")
-        .attr("style", "background: green");
+    let html_table = legend_group.append("foreignObject")
+        .attr("x", 0)
+        .attr("y", -40)
+        .attr("width", "450px")
+        .attr("height", "200px");
 
-    legend_text_group.append("text")
-        .attr("id", "label-names")
-        .attr("x", 40)
-        .attr("y", -20)
-        .selectAll("tspan")
-        .data(legend_text_data)
-        .enter()
-        .append("tspan")
-        .attr("x", 40)
-        .html(d => d.label.substr(0, 15) + (d.label.length > 15 ? "..." : ''))
-        .attr("dy", "1.5em")
-        .attr("fill", "white")
-        .append("title")
-        .html(d => d.label);
-
-    legend_text_group.append("text")
-        .attr("id", "label-percentages")
-        // .attr("x", 140)
-        .attr("y", -20)
-        .selectAll("tspan")
-        .data(legend_text_data)
-        .enter()
-        .append("tspan")
-        .attr("x", 240)
-        // .html(d => d.len + "%")
-        .html((d, i) => (data["top_class_percents"][i] * 100).toFixed(2) + "%")
-        .attr("text-anchor", "end")
-        .attr("dy", "1.5em")
-        .attr("fill", "white");
-
-    legend_text_group.append("text")
-        .attr("id", "label-counts")
-        // .attr("x", 140)
-        .attr("y", -20)
-        .selectAll("tspan")
-        .data(legend_text_data)
-        .enter()
-        .append("tspan")
-        .attr("x", 270)
-        // .html(d => d.len + "%")
-        .html((d, i) => Math.round(data["top_class_percents"][i] * data["membership"].length) + "/" + data["membership"].length)
-        .attr("text-anchor", "start")
-        .attr("dy", "1.5em")
-        .attr("fill", "white");
-
-    let bounding_box = legend_text_group.node().getBBox();
-
-    let image_height = 80;
-
-    legend_group.insert("rect", "g#legend-table")
-        .attr("x", bounding_box.x - 10)
-        .attr("y", bounding_box.y - 5)
-        .attr("width", bounding_box.width + 20)
-        .attr("height", bounding_box.height + 35 + image_height)
-        .attr("opacity", 0.8)
-        .attr("stroke", "#999");
-
-    legend_text_group.append("image")
-        .attr("x", bounding_box.width / 2)
-        .attr("y", bounding_box.height)
-        // .attr("x", "50%")
-        .attr("height", image_height)
-        .attr("xlink:href", `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`);
-
-    // legend_text_group.append("line")
-    //     .attr("id", "separator1")
-    //     .attrs({"x1": 170, "y1": -15, "x2": 170, "y2": bounding_box.height - 2})
-    //     .attr("stroke", "white");
+    let table_div = html_table.append("xhtml:div")
+        .style("padding", "20px")
+        .html(buildTooltipTable(data, data_path, dataset, layer_name));
 
     let orig_imgdiv = d3.select("#original-images");
     let orig_image_list = [];
@@ -354,7 +317,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
   let overlaps = graph_data.links.map(jaccard);
 
   // Populate autocomplete text-box with new class names from the current layer
-  awesomeplete_instace.list = class_names;
+  awesomeplete_instance.list = class_names;
   // Disable all classes not present in current graph
   let modal_labels = d3.selectAll(".modal-label");
   modal_labels.filter(d => d.some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
@@ -451,7 +414,8 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("width", img_size)
       .attr("height", img_size)
       .attr("visibility", d3.select("#node-glyph-checkbox").property("checked") ? "visibile" : "hidden")
-      .attr("class", "node-glyph");
+      .attr("class", "node-glyph")
+      .classed("clickable", true);
 
 
   node.append("title")
