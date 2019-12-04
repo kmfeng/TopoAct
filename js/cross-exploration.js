@@ -145,7 +145,7 @@ function buildTooltipTable(data, data_path, dataset, layer_name) {
       let tc = top_classes[i].split(",")[0].trim();
       let tc_clipped = tc.substr(0, 30) + (tc.length > 30 ? "..." : '');
       table += `<td>${tc_clipped}</td>`;
-      table += `<td align="center">${percents[i].toFixed(2)}</td>`;
+      table += `<td align="center">${percents[i].toFixed(3)}</td>`;
       table += `<td align="center">${Math.round(percents[i] * data["membership"].length)}/${data["membership"].length}</td>`;
       if (i === 0) {
         table += `<td align="center" rowspan='3'><img src='${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg'></img></td>`;
