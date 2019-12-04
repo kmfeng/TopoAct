@@ -419,7 +419,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("stroke", (d, i) => links_color_scale(overlaps[i]));
 
   link.append("title")
-      .text((d, i) => 'Jaccard similarity between vertices = ' + overlaps[i].toFixed(3));
+      .text((d, i) => 'Weight = ' + overlaps[i].toFixed(3));
 
   const node = mapper_svg_g.append("g")
       .attr("stroke", getColor("--node-stroke-color"))
