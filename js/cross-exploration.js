@@ -39,15 +39,26 @@ function getColor(name) {
 
 function buildLayers() {
   function layerBtnClicked(data) {
+    // get clicked layer name
+    let layers = ["3a", "3b", "4a", "4b", "4c", "4d", "4e", "5a", "5b"];
+    let curr_layer = data.slice(-2);
+    if (curr_layer === '3a') curr_layer = '3b';
+    if (curr_layer === '5b') curr_layer = '5a';
+    let prev_layer = layers[layers.indexOf(curr_layer) - 1];
+    let next_layer = layers[layers.indexOf(curr_layer) + 1];
+
     // First set all layer-buttons to unselected
     d3.selectAll("div.layer-button").classed("selected", false);
 
-    // Then set clicked div to selected
+    // Then set prev, curr and next layers to selected
+    d3.select("#mixed" + prev_layer).classed("selected", true);
+    d3.select("#mixed" + curr_layer).classed("selected", true);
+    d3.select("#mixed" + next_layer).classed("selected", true);
+
     let layerDiv = d3.select(d3.event.target);
     layerDiv.classed("selected", true);
 
-    let {dataset, layer} = getCurrentParams();
-    // draw_mapper(layer, dataset, "mapper-svg-prev", awesomplete_inst);
+    draw_helper();
   }
 
   try {
@@ -60,7 +71,7 @@ function buildLayers() {
         .append("div")
         .attr("id", d => "mixed" + d)
         .attr("class", "layer-button")
-        .classed("selected", d => d === "3a")
+        .classed("selected", d => ["3a", "3b", "4a"].includes(d))
         .html(d => d)
         .on('click', layerBtnClicked);
 
@@ -92,17 +103,16 @@ function buildLayers() {
 
 function buildDatasetDropdown() {
   function datasetChanged() {
-    let {dataset, layer} = getCurrentParams();
-    draw_mapper(layer, dataset, "mapper-svg-prev", awesomplete_inst);
+    draw_helper();
   }
 
   try {
     let datasets = [
-      // {name: "Overlap-20", path: "test1"},
+      {name: "Overlap-20", path: "test1"},
       {name: "Overlap-30", path: "test2"},
-      {name: "Overlap-30-seed-2", path: "test4"},
-      {name: "Overlap-30-eps", path: "test3"},
-      {name: "Overlap-50", path: "test5"}
+      {name: "Overlap-50", path: "test5"},
+      // {name: "Overlap-30-seed-2", path: "test4"},
+      {name: "Overlap-30-eps", path: "test3"}
     ];
 
     let dropdown = d3.select("#dataset-selector");
@@ -150,10 +160,13 @@ function buildTooltipTable(data, data_path, dataset, layer_name) {
 }
 
 function resetSelection() {
-  console.log("resetSelection called");
   // Set node and link opacities
-  d3.selectAll("#node-group>g").attr("opacity", 1);
-  d3.selectAll('#link-group').attr("opacity", 1);
+  d3.selectAll("#node-group-prev>g").attr("opacity", 1);
+  d3.selectAll('#link-group-prev').attr("opacity", 1);
+  d3.selectAll("#node-group-curr>g").attr("opacity", 1);
+  d3.selectAll('#link-group-curr').attr("opacity", 1);
+  d3.selectAll("#node-group-next>g").attr("opacity", 1);
+  d3.selectAll('#link-group-next').attr("opacity", 1);
 
   // Remove the summary-box
   d3.selectAll(".legend-group").remove();
@@ -167,8 +180,7 @@ function resetSelection() {
   // searchbox.dispatch("keyup");
 }
 
-async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_instance) {
-
+async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_instance, pos) {
   const data_path = "./data";
 
   function handleMouseClick(data) {
@@ -186,7 +198,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       return {"label": d.split(",")[0], "len": d.split(",")[0].length}
     });
 
-    let legend_group = d3.select("g#legend-" + data.id).append("g")
+    let legend_group = d3.select("g#legend-" + pos + "-" + data.id).append("g")
         .attr("class", "legend-group");
 
     let html_table = legend_group.append("foreignObject")
@@ -202,94 +214,94 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
         .style("padding-right", "10px")
         .html(buildTooltipTable(data, data_path, dataset, layer_name));
 
-    let orig_imgdiv = d3.select("#original-images");
-    let orig_image_list = [];
-
-    for (let i = 0; i < data["top_classes"].length; i++) {
-      for (let j = 0; j < 5; j++) {
-        let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/icons/${data["top_classes"][i]}_${j}.jpg`;
-        orig_image_list.push(img_src);
-      }
-    }
-
-    orig_imgdiv.selectAll("img")
-        .data(orig_image_list)
-        .enter()
-        .append("img")
-        .attr("src", d => d)
-        .attr("style", "margin: 1px; width:19%");
-
-    let act_imgdiv = d3.select("#activation-images");
-    let act_image_list = [];
-
-    for (let i = 0; i < data["top_classes"].length; i++) {
-      for (let j = 0; j < 5; j++) {
-        let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/${data["top_classes"][i]}${j}.jpg`;
-        act_image_list.push(img_src);
-      }
-    }
-
-    act_imgdiv.selectAll("img")
-        .data(act_image_list)
-        .enter()
-        .append("img")
-        .attr("onerror", "this.src=''")
-        .attr("src", d => d)
-        .attr("style", "margin: 1px; width:19%");
-
-    // Add average activation image
-    let avg_image_path = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`;
-    act_imgdiv.append("div")
-        .attr("id", "averaged-image")
-        .html("Averaged activation image <hr style='width: 100%'>")
-        .append("img")
-        .attr("onerror", "this.src=''")
-        .attr("src", avg_image_path)
-        .attr("style", "margin: 1px; width:30%; display: block; margin: auto; image-rendering: pixelated;");
-
-    function create_image_list(layer_name, cluster_id) {
-      let image_list = [];
-      for (let i = 0; i < 15; i++) {
-        let img_src = `${data_path}/${dataset}/${layer_name}/${cluster_id}/opt/optimized_image_${i}.jpg`;
-        image_list.push(img_src);
-      }
-      return image_list;
-    }
-
-    act_imgdiv.exit().remove();
-
-    let top_classes_div = d3.select("#top-classes");
-
-    top_classes_div.append("ul")
-        .attr("id", "top-classes-list")
-        .attr("style", "padding-left: 0")
-        .selectAll("li")
-        .data(data["top_classes"])
-        .enter()
-        .append("li")
-        .html(d => d)
+    // let orig_imgdiv = d3.select("#original-images");
+    // let orig_image_list = [];
+    //
+    // for (let i = 0; i < data["top_classes"].length; i++) {
+    //   for (let j = 0; j < 5; j++) {
+    //     let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/icons/${data["top_classes"][i]}_${j}.jpg`;
+    //     orig_image_list.push(img_src);
+    //   }
+    // }
+    //
+    // orig_imgdiv.selectAll("img")
+    //     .data(orig_image_list)
+    //     .enter()
+    //     .append("img")
+    //     .attr("src", d => d)
+    //     .attr("style", "margin: 1px; width:19%");
+    //
+    // let act_imgdiv = d3.select("#activation-images");
+    // let act_image_list = [];
+    //
+    // for (let i = 0; i < data["top_classes"].length; i++) {
+    //   for (let j = 0; j < 5; j++) {
+    //     let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/${data["top_classes"][i]}${j}.jpg`;
+    //     act_image_list.push(img_src);
+    //   }
+    // }
+    //
+    // act_imgdiv.selectAll("img")
+    //     .data(act_image_list)
+    //     .enter()
+    //     .append("img")
+    //     .attr("onerror", "this.src=''")
+    //     .attr("src", d => d)
+    //     .attr("style", "margin: 1px; width:19%");
+    //
+    // // Add average activation image
+    // let avg_image_path = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`;
+    // act_imgdiv.append("div")
+    //     .attr("id", "averaged-image")
+    //     .html("Averaged activation image <hr style='width: 100%'>")
+    //     .append("img")
+    //     .attr("onerror", "this.src=''")
+    //     .attr("src", avg_image_path)
+    //     .attr("style", "margin: 1px; width:30%; display: block; margin: auto; image-rendering: pixelated;");
+    //
+    // function create_image_list(layer_name, cluster_id) {
+    //   let image_list = [];
+    //   for (let i = 0; i < 15; i++) {
+    //     let img_src = `${data_path}/${dataset}/${layer_name}/${cluster_id}/opt/optimized_image_${i}.jpg`;
+    //     image_list.push(img_src);
+    //   }
+    //   return image_list;
+    // }
+    //
+    // act_imgdiv.exit().remove();
+    //
+    // let top_classes_div = d3.select("#top-classes");
+    //
+    // top_classes_div.append("ul")
+    //     .attr("id", "top-classes-list")
+    //     .attr("style", "padding-left: 0")
+    //     .selectAll("li")
+    //     .data(data["top_classes"])
+    //     .enter()
+    //     .append("li")
+    //     .html(d => d)
   }
 
   function handleMouseOut(data) {
     if (data !== '') {
-      node.attr("opacity", 1);
-      d3.selectAll('#link-group').attr("opacity", 1);
+      d3.selectAll('#node-group-' + pos).attr("opacity", 1);
+      d3.selectAll('#link-group-' + pos).attr("opacity", 1);
     }
 
     d3.selectAll("circle").attr("stroke-width", "1px")
         .classed("focus-node", false);
-    d3.selectAll(".legend-group").remove();
+    d3.selectAll(".legend-group-" + pos).remove();
 
-    let orig_imgdiv = d3.select("#original-images");
-    orig_imgdiv.selectAll("img").remove();
-
-    let act_imgdiv = d3.select("#activation-images");
-    act_imgdiv.selectAll("img").remove();
-
-    d3.select("#averaged-image").remove();
-
-    let top_classes_div = d3.select("#top-classes");
-    top_classes_div.html("");
+    // let orig_imgdiv = d3.select("#original-images");
+    // orig_imgdiv.selectAll("img").remove();
+    //
+    // let act_imgdiv = d3.select("#activation-images");
+    // act_imgdiv.selectAll("img").remove();
+    //
+    // d3.select("#averaged-image").remove();
+    //
+    // let top_classes_div = d3.select("#top-classes");
+    // top_classes_div.html("");
   }
 
   function jaccard(link_data) {
@@ -321,7 +333,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
 
   // Click anywhere outside the graph to dismiss the summary box
   mapper_svg.on('click', function () {
-    if (d3.event.target.id ===svg_container) {
+    if (d3.event.target.id === svg_container.replace("#", "")) {
       d3.selectAll(".legend-group").remove();
     }
   });
@@ -400,7 +412,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .force("center", d3.forceCenter(width / 2, height / 2));
 
   const link = mapper_svg_g.append("g")
-      .attr('id', 'link-group')
+      .attr('id', 'link-group-' + pos)
       .attr("stroke", getColor("--link-stroke-color"))
       .attr("stroke-opacity", 1)
       .selectAll("line")
@@ -410,13 +422,13 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("stroke", (d, i) => links_color_scale(overlaps[i]));
 
   link.append("title")
-      .text((d, i) => 'Jaccard similarity between vertices = ' + overlaps[i].toFixed(3));
+      .text((d, i) => 'Weight = ' + overlaps[i].toFixed(3));
 
   const node = mapper_svg_g.append("g")
+      .attr("id", "node-group-" + pos)
       .attr("stroke", getColor("--node-stroke-color"))
       .attr("stroke-width", 1)
       .attr("stroke-opactiy", 0.6)
-      .attr("id", "node-group")
       .selectAll("circle")
       .data(nodes)
       .enter()
@@ -426,7 +438,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("r", d => radius_scale(d["membership"].length))
       .attr("fill", d => color_scale(d["l2NormAvg"]))
       .attr("stroke-width", "1px")
-      .attr("id", d => d.id)
+      .attr("id", d => d.id + pos)
       .attr("class", "clickable");
 
   let img_size = 20;
@@ -445,18 +457,18 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("dx", 12)
       .attr("dy", "0.35em")
       .attr("class", "node-label")
-      .text(d => d.id + ', size=' + d["membership"].length + "\n" + "l2norm=" + d['l2NormAvg'].toFixed(4) + '\n----------\n' +
+      .text(d => d.id + pos + ', size=' + d["membership"].length + "\n" + "l2norm=" + d['l2NormAvg'].toFixed(4) + '\n----------\n' +
           d["top_classes"].map(x => x.split(",")[0]).join('\n'));
 
   node.on("click", handleMouseClick);
 
   let legend = mapper_svg_g.append("g")
-      .attr("id", "legend")
+      .attr("id", "legend-" + pos)
       .selectAll("g")
       .data(nodes)
       .enter()
       .append("g")
-      .attr("id", d => "legend-" + d.id);
+      .attr("id", d => "legend-" + pos + "-" + d.id);
 
   // add drag capabilities
   const drag_handler = d3.drag()
@@ -469,8 +481,7 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .on("zoom", zoom_actions);
 
   drag_handler(node);
-  zoom_handler(mapper_svg);
-
+  mapper_svg.call(zoom_handler);
 
   simulation.on("tick", () => {
     link
@@ -505,21 +516,30 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
 
   function drag_end(d) {
     if (!d3.event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
+    // d.fx = null;
+    // d.fy = null;
   }
 
   //Zoom functions
   function zoom_actions() {
     mapper_svg_g.attr("transform", d3.event.transform);
   }
+
+  d3.select("#zoom-in-" + pos).on("click", function () {
+    zoom_handler.scaleBy(mapper_svg, 1.2);
+  });
+
+  d3.select("#zoom-out-" + pos).on("click", function () {
+    zoom_handler.scaleBy(mapper_svg, 0.8);
+  });
 }
 
 function getCurrentParams() {
-  //  Get the current params - selected layer and dataset
-  let selected_layer = d3.select(".selected");
+  //  Get the current params - selected layers and dataset
+  let selected_layers = d3.selectAll(".selected").data().map(d => "mixed" + d);
+  console.log(selected_layers);
   let selected_dataset = d3.select("#dataset-selector");
-  return {layer: selected_layer.node().id, dataset: selected_dataset.node().value};
+  return {layers: selected_layers, dataset: selected_dataset.node().value};
 }
 
 function populateModal() {
@@ -636,6 +656,13 @@ function make_modal_window() {
   }
 }
 
+function draw_helper() {
+  let {dataset, layers} = getCurrentParams();
+  draw_mapper(layers[0], dataset, '#mapper-svg-prev', awesomplete_inst, "prev");
+  draw_mapper(layers[1], dataset, '#mapper-svg-curr', awesomplete_inst, "curr");
+  draw_mapper(layers[2], dataset, '#mapper-svg-next', awesomplete_inst, "next");
+}
+
 // Wrapper to call all functions
 async function wrapper() {
   try {
@@ -646,11 +673,8 @@ async function wrapper() {
     buildDatasetDropdown();
     make_modal_window();
     populateModal();
+    draw_helper();
 
-    let {dataset, layer} = getCurrentParams();
-    draw_mapper('mixed3b', dataset, '#mapper-svg-prev', awesomplete_inst);
-    draw_mapper('mixed4a', dataset, '#mapper-svg-curr', awesomplete_inst);
-    draw_mapper('mixed4b', dataset, '#mapper-svg-next', awesomplete_inst);
   } catch (e) {
     console.log(e)
   }

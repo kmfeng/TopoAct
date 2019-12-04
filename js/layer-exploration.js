@@ -479,7 +479,6 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .on("zoom", zoom_actions);
 
   drag_handler(node);
-  // zoom_handler(mapper_svg);
   mapper_svg.call(zoom_handler);
 
   simulation.on("tick", () => {

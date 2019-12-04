@@ -162,29 +162,32 @@ body {
   display: inline-block;
 }
 
-#mapper-svg-prev {
-  /*position: relative;*/
+#mapper-prev {
+  position: relative;
   /*width: 100%;*/
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-right: 5px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   grid-area: mapper-prev;
   /*background-color: var(--toolbar-bg-color);*/
   /*height: 100%;*/
 }
 
-#mapper-svg-curr {
-  /*position: relative;*/
+#mapper-curr {
+  position: relative;
   /*width: 100%;*/
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-right: 5px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   grid-area: mapper-curr;
   /*background-color: var(--toolbar-bg-color);*/
   /*height: 100%;*/
 }
 
-#mapper-svg-curr {
-  /*position: relative;*/
+#mapper-next {
+  position: relative;
   /*width: 100%;*/
-  grid-area: mapper-curr;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  grid-area: mapper-next;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  /*border: 5px solid rgba(0, 0, 0, 0.1);*/
   /*background-color: var(--toolbar-bg-color);*/
   /*height: 100%;*/
 }
@@ -409,4 +412,32 @@ table.fixed td:nth-of-type(1) {
   white-space: nowrap;
   display: block;
   overflow: hidden;
+}
+
+.zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.zoom-button.fas {
+  display: block;
+  height: 35px;
+  font-size: 1.5em;
+  /*font-weight: 500;*/
+  color: var(--layer-text-color);
+  background-color: var(--layer-bg-color);
+  box-shadow: 0 0 5px -1px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  vertical-align: middle;
+  text-align: center;
+  max-width: 100px;
+  padding: 5px 13px;
+  margin: 5px 1px;
+  line-height: 35px;
+}
+
+.zoom-button.fas:hover {
+  background-color: var(--layer-bg-color-hover);
+  box-shadow: 0 0 5px -1px rgba(0, 0, 0, 0.6);
 }
