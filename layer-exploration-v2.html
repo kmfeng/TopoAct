@@ -35,7 +35,9 @@
     <div id="searchbox-div" class="bordered">
       <input id="searchbox" type="text" placeholder="Search for class...">
       <i id="myBtn" class="fas fa-th clickable modal-icon" title="Help"></i>
-      <button class="clickable" style="text-align: center; font-size:1em; margin-left: 10px;" onclick="resetSelection()">Reset</button>
+      <button class="clickable" style="text-align: center; font-size:1em; margin-left: 10px;"
+              onclick="resetSelection()">Reset
+      </button>
     </div>
     <div id="classes-modal" class="modal">
       <!-- Modal content -->
@@ -52,6 +54,10 @@
   <!--  Graph area-->
   <div id="mapper" class="bordered">
     <svg id="mapper-svg"></svg>
+    <div class="zoom-controls">
+      <div id="zoom-in" class="fas fa-plus zoom-button"></div>
+      <div id="zoom-out" class="fas fa-minus zoom-button"></div>
+    </div>
   </div>
 
   <!--  Cluster Details-->
@@ -64,12 +70,17 @@
     <div id="original-images">
       Images from top classes
       <hr>
+      <div id="original-images-grid"></div>
     </div>
 
     <div id="activation-images">
       <div> Activation images
         <hr>
+        <div id="activation-images-grid"></div>
       </div>
+    </div>
+    <div id="average-activation" style="padding-bottom: 20px;">
+      Averaged activation image <hr>
     </div>
   </div>
 </div>
@@ -77,5 +88,5 @@
 
 <script type="text/javascript" src="https://d3js.org/d3.v5.js"></script>
 <script type="text/javascript" src="js/awesomplete.js"></script>
-<script type="text/javascript" src="js/page-setup.js"></script>
+<script type="text/javascript" src="js/layer-exploration.js"></script>
 </html>

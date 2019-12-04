@@ -71,7 +71,7 @@ body {
     padding: 10px;
 }
 
-#mapper {
+#mapper-prev {
     grid-area: mapper;
     padding: 10px;
     border: 1px solid darkgrey;
