@@ -119,7 +119,7 @@ function buildDatasetDropdown() {
         .attr("id", d => d.value.toLowerCase())
         .attr("value", d => d.value.toLowerCase())
         .attr("selected", d => {
-          return d.name === "Overlap-50" ? "selected" : null;
+          return d.name === "Overlap-20-Epsilon-Fixed" ? "selected" : null;
         })
         .html(d => d.name);
 
