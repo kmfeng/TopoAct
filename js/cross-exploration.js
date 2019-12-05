@@ -1,4 +1,4 @@
-var awesomplete_inst = new Awesomplete(document.getElementById("searchbox"), {minChars: 1});
+var awesomplete_inst = new Awesomplete(document.getElementById("searchbox"), {minChars: 1, maxItems: 20});
 var labels;
 
 function array_intersect() {
