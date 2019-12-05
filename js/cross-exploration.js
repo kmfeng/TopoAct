@@ -280,27 +280,6 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
   // modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
   // modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).remove();
 
-  // Enable searchbox functionality
-  // On selection from the auto-complete list, trigger cleanup of side-panel
-  // If the searchbox is cleared, restore node and link opacities
-  let search_term = d3.select("#searchbox");
-  search_term.on("awesomplete-selectcomplete", function () {
-    handleMouseOut("");
-    let search_term_val = search_term.node().value;
-    if (search_term_val === "") {
-      resetSelection();
-    } else {
-      node.filter(d => !checkStrInArr(d, search_term_val)).attr("opacity", 0.1);
-      d3.selectAll('#link-group').attr("opacity", 0.1);
-    }
-  });
-  search_term.on("keyup", function () {
-    let search_term_val = search_term.node().value;
-    if (search_term_val === "") {
-      resetSelection();
-    }
-  });
-
   // ------------------ Scales -------------------
   let color_scale = d3.scaleSequential(d3.interpolateTurbo).domain(d3.extent(l2normvals));
   color_scale.nice();
@@ -482,7 +461,39 @@ function populateModal() {
     return a[0] > b[0] ? 1 : -1;
   });
 
-  awesomplete_inst.list = sorted_labels;
+  awesomplete_inst.list = sorted_labels.map(x => x[1]);
+
+  // Enable searchbox functionality
+  // On selection from the auto-complete list, trigger cleanup of side-panel
+  // If the searchbox is cleared, restore node and link opacities
+  let search_term = d3.select("#searchbox");
+  search_term.on("awesomplete-selectcomplete", function () {
+    let selected_labels = [search_term.node().value];
+    let nodes_prev = d3.selectAll("#node-group-prev>g");
+    let links_prev = d3.selectAll("#link-group-prev");
+    nodes_prev.attr("opacity", 1);
+    nodes_prev.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+    links_prev.attr("opacity", 0.1);
+
+    let nodes_curr = d3.selectAll("#node-group-curr>g");
+    let links_curr = d3.selectAll("#link-group-curr");
+    nodes_curr.attr("opacity", 1);
+    nodes_curr.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+    links_curr.attr("opacity", 0.1);
+
+    let nodes_next = d3.selectAll("#node-group-next>g");
+    let links_next = d3.selectAll("#link-group-next");
+    nodes_next.attr("opacity", 1);
+    nodes_next.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+    links_next.attr("opacity", 0.1);
+  });
+
+  search_term.on("keyup", function () {
+    let search_term_val = search_term.node().value;
+    if (search_term_val === "") {
+      resetSelection();
+    }
+  });
 
   let groupBy = function (xs, key) {
     return xs.reduce(function (rv, x) {
