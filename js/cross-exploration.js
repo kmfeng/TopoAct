@@ -451,9 +451,11 @@ function populateModal() {
   function modalLabelClicked() {
     d3.select(this).classed("selected-label", !d3.select(this).classed("selected-label"));
   }
+  // First clear everthing
+  d3.select("#modal-label-holder").remove();
 
   // Modal window
-  const modal = d3.select(".modal-body");
+  const modal = d3.select(".modal-body").append("div").attr("id", "modal-label-holder");
 
   // Get classes from nodes
   let classes_prev = d3.selectAll("#node-group-prev>g").data().map(x => x["top_classes"][0].split(",").map(y => y.trim())).flat();
@@ -463,9 +465,9 @@ function populateModal() {
 
   let sorted_labels = classes_all.map(x => [x.charAt(0).toUpperCase(), x]).sort(function (a, b) {
     return a[0] > b[0] ? 1 : -1;
-  });
+  }).map(x => x[1]);
 
-  awesomplete_inst.list = sorted_labels.map(x => x[1]);
+  awesomplete_inst.list = sorted_labels;
 
   // Enable searchbox functionality
   // On selection from the auto-complete list, trigger cleanup of side-panel
@@ -506,8 +508,9 @@ function populateModal() {
     }, {});
   };
 
-  let grouped_labels = groupBy(sorted_labels, x => x[0]);
+  let grouped_labels = groupBy(sorted_labels.map(x => x.toLowerCase()), x => x.charAt(0).toLowerCase());
 
+  console.log('grouped', grouped_labels);
 
   let modal_directory_divs = modal.selectAll("div")
       .data(Object.entries(grouped_labels))
@@ -519,17 +522,17 @@ function populateModal() {
 
   let modal_class_sections = modal_directory_divs.append("div")
       .classed("modal-directory-listing", true)
-      .html(d => d[0]);
+      .html(d => d[0].toUpperCase());
 
   let modal_class_labels = modal_directory_divs.append("div")
       .style("padding-left", "2em")
       .selectAll("span")
-      .data(d => d[1])
+      .data(d => d[1].sort())
       .enter()
       .append("span")
       .classed("modal-label", true)
       .classed("clickable", true)
-      .html(x => x[1])
+      .html(x => x)
       .on("click", modalLabelClicked);
 }
 
@@ -555,7 +558,7 @@ function make_modal_window() {
   // When the user clicks on <span> (x), close the modal
   span.onclick = function () {
     modal.style.display = "none";
-    let selected_labels = d3.selectAll(".selected-label").data().map(x => x[1]).flat();
+    let selected_labels = d3.selectAll(".selected-label").data().flat();
 
     // set searchbox to selected-labels value
     d3.select("#searchbox").node().value = selected_labels.join(", ");
@@ -589,7 +592,7 @@ function make_modal_window() {
   window.onclick = function (event) {
     if (event.target === modal) {
       modal.style.display = "none";
-      let selected_labels = d3.selectAll(".selected-label").data().map(x => x[1]).flat();
+      let selected_labels = d3.selectAll(".selected-label").data().flat();
 
       // set searchbox to selected-labels value
       d3.select("#searchbox").node().value = selected_labels.join(", ");
