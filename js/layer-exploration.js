@@ -103,12 +103,12 @@ function buildDatasetDropdown() {
 
   try {
     let datasets = [
-      {name: "Overlap-20-Epsilon-Fixed", value: "test1"},
-      {name: "Overlap-30-Epsilon-Fixed", value: "test2"},
-      {name: "Overlap-50-Epsilon-Fixed", value: "test5"},
-      {name: "Overlap-20-Epsilon-Adaptive", value: "test1"},
-      {name: "Overlap-30-Epsilon-Adaptive", value: "test2"},
-      {name: "Overlap-50-Epsilon-Adaptive", value: "test5"},
+      {name: "Overlap-20-Epsilon-Fixed", value: "overlap-20"},
+      {name: "Overlap-30-Epsilon-Fixed", value: "overlap-30"},
+      {name: "Overlap-50-Epsilon-Fixed", value: "overlap-50"},
+      {name: "Overlap-20-Epsilon-Adaptive", value: "overlap-20-eps"},
+      {name: "Overlap-30-Epsilon-Adaptive", value: "overlap-30-eps"},
+      {name: "Overlap-50-Epsilon-Adaptive", value: "overlap-50-eps"},
     ];
 
     let dropdown = d3.select("#dataset-selector");
@@ -116,8 +116,8 @@ function buildDatasetDropdown() {
         .data(datasets)
         .enter()
         .append("option")
-        .attr("id", d => d.name.toLowerCase())
-        .attr("value", d => d.name.toLowerCase())
+        .attr("id", d => d.value.toLowerCase())
+        .attr("value", d => d.value.toLowerCase())
         .attr("selected", d => {
           return d.name === "Overlap-50" ? "selected" : null;
         })
