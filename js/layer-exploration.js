@@ -63,6 +63,7 @@ function buildLayers() {
         .attr("class", "layer-button")
         .classed("selected", d => d === "3a")
         .html(d => d)
+        .attr("title", d => "mixed" + d)
         .on('click', layerBtnClicked);
 
     let glyph_div = layer_div.append("div")
@@ -71,10 +72,12 @@ function buildLayers() {
     glyph_div.append("input")
         .attr("type", "checkbox")
         .style("display", "inline-block")
+        .attr("title", "Overlay average activation image for each node on the graph")
         .attr("id", "node-glyph-checkbox");
 
     glyph_div.append("label")
         .attr("for", "node-glyph-checkbox")
+        .attr("title", "Overlay average activation image for each node on the graph")
         .html("Show activation images");
 
     d3.select("#node-glyph-checkbox").on("change", function () {
@@ -100,11 +103,12 @@ function buildDatasetDropdown() {
 
   try {
     let datasets = [
-      {name: "Overlap-20", path: "test1"},
-      {name: "Overlap-30", path: "test2"},
-      {name: "Overlap-50", path: "test5"},
-      // {name: "Overlap-30-seed-2", path: "test4"},
-      {name: "Overlap-30-eps", path: "test3"}
+      {name: "Overlap-20-Epsilon-Fixed", value: "test1"},
+      {name: "Overlap-30-Epsilon-Fixed", value: "test2"},
+      {name: "Overlap-50-Epsilon-Fixed", value: "test5"},
+      {name: "Overlap-20-Epsilon-Adaptive", value: "test1"},
+      {name: "Overlap-30-Epsilon-Adaptive", value: "test2"},
+      {name: "Overlap-50-Epsilon-Adaptive", value: "test5"},
     ];
 
     let dropdown = d3.select("#dataset-selector");
@@ -454,8 +458,8 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("dx", 12)
       .attr("dy", "0.35em")
       .attr("class", "node-label")
-      .text(d => d.id + ', size=' + d["membership"].length + "\n" + "l2norm=" + d['l2NormAvg'].toFixed(4) + '\n----------\n' +
-          d["top_classes"].map(x => x.split(",")[0]).join('\n'));
+      .text(d => "Info:\nID = " + d.id + '\n Node Size = ' + d["membership"].length + "\n" + "Value = " + d['l2NormAvg'].toFixed(4) + '\n\nTop Classes:\n' +
+          d["top_classes"].map(x => x.split(",")[0]).join('\t\n'));
 
   node.on("click", handleMouseClick);
 

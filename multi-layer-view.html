@@ -16,7 +16,7 @@
     <div id="title-text-left" class="bordered">TopoAct</div>
     <div id="title-text-center" class="bordered"></div>
     <div id="title-text-right" class="bordered">
-      <span id="header-page-link"><a href="single-layer-view.html">Single Layer Exploration</a></span>
+      <span id="header-page-link"><a href="single-layer-view.html" title="Switch to another view to &#013;view graphs for single layers">Single Layer Exploration</a></span>
       <span class="fas fa-question-circle clickable" title="Help"></span>
     </div>
   </div>
@@ -24,10 +24,10 @@
   <!-- Toolbar -->
   <div id="toolbar" class="bordered">
     <div id="toolbar-layer-list" class="bordered">
-      <div class="toolbar-content">Layer</div>
+      <div class="toolbar-content" title="Select neural network layers from InceptionV1 architecture to visualize&#013;Selected layer will be visualized with previous and next layer in the list">Layer</div>
     </div>
     <div id="separator1"></div>
-    <div id="toolbar-dataset" class="bordered">
+    <div id="toolbar-dataset" class="bordered" title="Select among different datasets with different parameters. &#013; Overlap parameter is for the Mapper algorithm. &#013; Epsilon is used for DBSCAN clustering">
       <div class="toolbar-content">Dataset</div>
       <div class="dataset-dropdown">
         <select id="dataset-selector"></select>
@@ -35,9 +35,9 @@
     </div>
     <div id="separator2"></div>
     <div id="searchbox-div" class="bordered">
-      <input id="searchbox" type="text" placeholder="Search for class...">
-      <i id="myBtn" class="fas fa-th clickable modal-icon" title="Help"></i>
-      <button class="clickable" style="text-align: center; font-size:1em; margin-left: 10px;"
+      <input id="searchbox" type="text" placeholder="Search for class..." title="Type in name of class to filter graph">
+      <i id="myBtn" class="fas fa-th clickable modal-icon" title="Select from a directory of class names to filter graph"></i>
+      <button class="clickable" style="text-align: center; font-size:1em; margin-left: 10px;" title="Reset current filters"
               onclick="resetSelection()">Reset
       </button>
     </div>

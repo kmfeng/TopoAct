@@ -73,6 +73,7 @@ function buildLayers() {
         .attr("class", "layer-button")
         .classed("selected", d => ["3a", "3b", "4a"].includes(d))
         .html(d => d)
+        .attr("title", d => "mixed" + d)
         .on('click', layerBtnClicked);
 
     let glyph_div = layer_div.append("div")
@@ -81,10 +82,12 @@ function buildLayers() {
     glyph_div.append("input")
         .attr("type", "checkbox")
         .style("display", "inline-block")
+        .attr("title", "Overlay average activation image for each node on the graph")
         .attr("id", "node-glyph-checkbox");
 
     glyph_div.append("label")
         .attr("for", "node-glyph-checkbox")
+        .attr("title", "Overlay average activation image for each node on the graph")
         .html("Show activation images");
 
     d3.select("#node-glyph-checkbox").on("change", function () {
@@ -357,8 +360,8 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
       .attr("dx", 12)
       .attr("dy", "0.35em")
       .attr("class", "node-label")
-      .text(d => d.id + pos + ', size=' + d["membership"].length + "\n" + "l2norm=" + d['l2NormAvg'].toFixed(4) + '\n----------\n' +
-          d["top_classes"].map(x => x.split(",")[0]).join('\n'));
+      .text(d => "Info:\nID = " + d.id + '\nNode Size = ' + d["membership"].length + "\n" + "Value = " + d['l2NormAvg'].toFixed(4) + '\n\nTop Classes:\n' +
+          d["top_classes"].map(x => x.split(",")[0]).join('\t\n'));
 
   node.on("click", handleMouseClick);
 
