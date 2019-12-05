@@ -3,9 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <title>TopoAct - Exploring Topology of Neural Activations</title>
-  <meta http-equiv="refresh" content="0; URL=single-layer-view.html">
+  <!--  <meta http-equiv="refresh" content="0; URL=single-layer-view.html">-->
+  <!--  <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssnormalize/cssnormalize-min.css">-->
+  <link rel="stylesheet" type="text/css" href="css/landing.css">
 </head>
 <body>
-
+<div id="container">
+  <div class="title-div">
+    <h1><span style="font-size: 1.3em">T</span>OPO<span style="font-size: 1.3em">A</span>CT</h1>
+    <h2>EXPLORING THE SHAPE OF ACTIVATIONS IN DEEP LEARNING</h2>
+  </div>
+  <hr class="title-hr">
+  <div class="content">
+    <h3>Introduction</h3>
+    <div class="content-matter">
+      <hr class="subhr">
+      Deep neural networks such as GoogLeNet and ResNet have achieved superhuman performance in tasks like image
+      classification.
+      To understand how such superior performance is achieved, we can probe a trained deep neural network by studying
+      neuron activations, that is, combinations of neuron firings, at any layer of the network in response to a
+      particular
+      input.
+      With a large set of input images, we aim to obtain a global view of what neurons detect by studying their
+      activations.
+      We ask the following questions: What is the shape of the activation space?
+      That is, what is the organizational principle behind neuron activations, and how are the activations related
+      within
+      a layer and across layers?
+      Using tools from topological data analysis, we present <b>TopoAct</b>, a visual exploration system used to study
+      topological summaries of activation vectors for a single layer as well as the evolution of such summaries across
+      multiple layers.
+      We present visual exploration scenarios using <b>TopoAct</b> that provide valuable insights towards learned
+      representations of an image classifier.
+    </div>
+    <h3>Interactive Demos</h3>
+    <div class="content-matter">
+      <hr class="subhr">
+      <div class="demo">
+        <div class="img-hover-zoom">
+          <a href="single-layer-view.html">
+            <img src="data/single-demo.png" alt="single layer view" href="single-layer-view.html">
+          </a>
+        </div>
+        <div class="demo-matter">
+          Explore the structure of activations from a single selected layer. Inspect nodes to
+          see images from dataset and the corresponding feature visualization.
+        </div>
+      </div>
+      <div class="demo">
+        <div class="img-hover-zoom">
+          <a href="multi-layer-view.html">
+            <img src="data/multi-view.png" alt="multilayer view" href="multi-layer-view.html">
+          </a>
+        </div>
+        <div class="demo-matter">
+          Compare structures of activations across multiple consecutive layers. Use filters to search of a specific
+          class or a set of classes across multiple graphs.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
