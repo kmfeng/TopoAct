@@ -213,73 +213,6 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
         .style("padding-bottom", "10px")
         .style("padding-right", "10px")
         .html(buildTooltipTable(data, data_path, dataset, layer_name));
-
-    // let orig_imgdiv = d3.select("#original-images");
-    // let orig_image_list = [];
-    //
-    // for (let i = 0; i < data["top_classes"].length; i++) {
-    //   for (let j = 0; j < 5; j++) {
-    //     let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/icons/${data["top_classes"][i]}_${j}.jpg`;
-    //     orig_image_list.push(img_src);
-    //   }
-    // }
-    //
-    // orig_imgdiv.selectAll("img")
-    //     .data(orig_image_list)
-    //     .enter()
-    //     .append("img")
-    //     .attr("src", d => d)
-    //     .attr("style", "margin: 1px; width:19%");
-    //
-    // let act_imgdiv = d3.select("#activation-images");
-    // let act_image_list = [];
-    //
-    // for (let i = 0; i < data["top_classes"].length; i++) {
-    //   for (let j = 0; j < 5; j++) {
-    //     let img_src = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/${data["top_classes"][i]}${j}.jpg`;
-    //     act_image_list.push(img_src);
-    //   }
-    // }
-    //
-    // act_imgdiv.selectAll("img")
-    //     .data(act_image_list)
-    //     .enter()
-    //     .append("img")
-    //     .attr("onerror", "this.src=''")
-    //     .attr("src", d => d)
-    //     .attr("style", "margin: 1px; width:19%");
-    //
-    // // Add average activation image
-    // let avg_image_path = `${data_path}/${dataset}/${layer_name}/${data.id}/opt/avg.jpg`;
-    // act_imgdiv.append("div")
-    //     .attr("id", "averaged-image")
-    //     .html("Averaged activation image <hr style='width: 100%'>")
-    //     .append("img")
-    //     .attr("onerror", "this.src=''")
-    //     .attr("src", avg_image_path)
-    //     .attr("style", "margin: 1px; width:30%; display: block; margin: auto; image-rendering: pixelated;");
-    //
-    // function create_image_list(layer_name, cluster_id) {
-    //   let image_list = [];
-    //   for (let i = 0; i < 15; i++) {
-    //     let img_src = `${data_path}/${dataset}/${layer_name}/${cluster_id}/opt/optimized_image_${i}.jpg`;
-    //     image_list.push(img_src);
-    //   }
-    //   return image_list;
-    // }
-    //
-    // act_imgdiv.exit().remove();
-    //
-    // let top_classes_div = d3.select("#top-classes");
-    //
-    // top_classes_div.append("ul")
-    //     .attr("id", "top-classes-list")
-    //     .attr("style", "padding-left: 0")
-    //     .selectAll("li")
-    //     .data(data["top_classes"])
-    //     .enter()
-    //     .append("li")
-    //     .html(d => d)
   }
 
   function handleMouseOut(data) {
@@ -291,21 +224,9 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
     d3.selectAll("circle").attr("stroke-width", "1px")
         .classed("focus-node", false);
     d3.selectAll(".legend-group-" + pos).remove();
-
-    // let orig_imgdiv = d3.select("#original-images");
-    // orig_imgdiv.selectAll("img").remove();
-    //
-    // let act_imgdiv = d3.select("#activation-images");
-    // act_imgdiv.selectAll("img").remove();
-    //
-    // d3.select("#averaged-image").remove();
-    //
-    // let top_classes_div = d3.select("#top-classes");
-    // top_classes_div.html("");
   }
 
   function jaccard(link_data) {
-    // return link_data["intersection"];
     let node_ids = nodes.map(d => d.id);
     let source_size = nodes[node_ids.indexOf(link_data.source)]["membership"].length;
     let target_size = nodes[node_ids.indexOf(link_data.target)]["membership"].length;
@@ -347,16 +268,16 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
   let membership_length = graph_data.nodes.map(d => d["membership"].length);
   let class_names = graph_data.nodes.map(d => d["top_classes"]);
   // Dedupe and flatten class name
-  class_names = [...new Set(class_names.map(d => d.map(x => x.split(","))).flat(2).map(y => y.trim()))];
+  // class_names = [...new Set(class_names.map(d => d.map(x => x.split(","))).flat(2).map(y => y.trim()))];
   let overlaps = graph_data.links.map(jaccard);
 
   // Populate autocomplete text-box with new class names from the current layer
-  awesomeplete_instance.list = class_names;
+  // awesomeplete_instance.list = class_names;
 
   // Disable all classes not present in current graph
   // Or remove them all together
-  let modal_labels = d3.selectAll(".modal-label");
-  modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
+  // let modal_labels = d3.selectAll(".modal-label");
+  // modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).classed("modal-label-disabled", true);
   // modal_labels.filter(d => d[1].some(x => class_names.indexOf(x) <= 0)).remove();
 
   // Enable searchbox functionality
@@ -532,31 +453,36 @@ async function draw_mapper(layer_name, dataset, svg_container, awesomeplete_inst
   d3.select("#zoom-out-" + pos).on("click", function () {
     zoom_handler.scaleBy(mapper_svg, 0.8);
   });
+
+  return;
 }
 
 function getCurrentParams() {
   //  Get the current params - selected layers and dataset
   let selected_layers = d3.selectAll(".selected").data().map(d => "mixed" + d);
-  console.log(selected_layers);
   let selected_dataset = d3.select("#dataset-selector");
   return {layers: selected_layers, dataset: selected_dataset.node().value};
 }
 
 function populateModal() {
-  function smallestString(strArr) {
-    return strArr[strArr.indexOf(Math.max(strArr.split(",").map(x => x.length)))];
-  }
-
   function modalLabelClicked() {
     d3.select(this).classed("selected-label", !d3.select(this).classed("selected-label"));
   }
 
   // Modal window
   const modal = d3.select(".modal-body");
-  // let sorted_labels = labels.map(d => d[0]).map(x => x.charAt(0).toUpperCase() + x.slice(1)).sort();
-  let sorted_labels = labels.map(x => [x[0].charAt(0).toUpperCase(), x]).sort(function (a, b) {
+
+  // Get classes from nodes
+  let classes_prev = d3.selectAll("#node-group-prev>g").data().map(x => x["top_classes"][0].split(",").map(y => y.trim())).flat();
+  let classes_curr = d3.selectAll("#node-group-curr>g").data().map(x => x["top_classes"][0].split(",").map(y => y.trim())).flat();
+  let classes_next = d3.selectAll("#node-group-next>g").data().map(x => x["top_classes"][0].split(",").map(y => y.trim())).flat();
+  let classes_all = [...new Set(classes_prev.concat(classes_curr, classes_next))];
+
+  let sorted_labels = classes_all.map(x => [x.charAt(0).toUpperCase(), x]).sort(function (a, b) {
     return a[0] > b[0] ? 1 : -1;
   });
+
+  awesomplete_inst.list = sorted_labels;
 
   let groupBy = function (xs, key) {
     return xs.reduce(function (rv, x) {
@@ -565,16 +491,14 @@ function populateModal() {
     }, {});
   };
 
-  let grouped_labels = groupBy(sorted_labels, function (x) {
-    return x[0];
-  });
+  let grouped_labels = groupBy(sorted_labels, x => x[0]);
+
 
   let modal_directory_divs = modal.selectAll("div")
       .data(Object.entries(grouped_labels))
       .enter()
       .append("div")
       .attr("id", d => "modal-directory-" + d[0])
-      // .style("border-bottom", "1px solid grey")
       .style("padding-top", "10px")
       .style("padding-bottom", "10px");
 
@@ -590,7 +514,7 @@ function populateModal() {
       .append("span")
       .classed("modal-label", true)
       .classed("clickable", true)
-      .html(x => x[1][0])
+      .html(x => x[1])
       .on("click", modalLabelClicked);
 }
 
@@ -622,12 +546,25 @@ function make_modal_window() {
     d3.select("#searchbox").node().value = selected_labels.join(", ");
 
     if (selected_labels.length !== 0) {
-      let nodes = d3.selectAll("#node-group>g");
-      let links = d3.selectAll("#link-group");
       d3.selectAll(".legend-group").remove();
-      nodes.attr("opacity", 1);
-      nodes.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
-      links.attr("opacity", 0.1);
+
+      let nodes_prev = d3.selectAll("#node-group-prev>g");
+      let links_prev = d3.selectAll("#link-group-prev");
+      nodes_prev.attr("opacity", 1);
+      nodes_prev.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+      links_prev.attr("opacity", 0.1);
+
+      let nodes_curr = d3.selectAll("#node-group-curr>g");
+      let links_curr = d3.selectAll("#link-group-curr");
+      nodes_curr.attr("opacity", 1);
+      nodes_curr.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+      links_curr.attr("opacity", 0.1);
+
+      let nodes_next = d3.selectAll("#node-group-next>g");
+      let links_next = d3.selectAll("#link-group-next");
+      nodes_next.attr("opacity", 1);
+      nodes_next.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+      links_next.attr("opacity", 0.1);
     } else {
       resetSelection();
     }
@@ -640,15 +577,28 @@ function make_modal_window() {
       let selected_labels = d3.selectAll(".selected-label").data().map(x => x[1]).flat();
 
       // set searchbox to selected-labels value
-      d3.select("#searchbox").node().value = d3.selectAll(".selected-label").data().map(x => x[1][0]).join(", ");
+      d3.select("#searchbox").node().value = selected_labels.join(", ");
 
       if (selected_labels.length !== 0) {
-        let nodes = d3.selectAll("#node-group>g");
-        let links = d3.selectAll("#link-group");
         d3.selectAll(".legend-group").remove();
-        nodes.attr("opacity", 1);
-        nodes.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
-        links.attr("opacity", 0.1);
+
+        let nodes_prev = d3.selectAll("#node-group-prev>g");
+        let links_prev = d3.selectAll("#link-group-prev");
+        nodes_prev.attr("opacity", 1);
+        nodes_prev.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+        links_prev.attr("opacity", 0.1);
+
+        let nodes_curr = d3.selectAll("#node-group-curr>g");
+        let links_curr = d3.selectAll("#link-group-curr");
+        nodes_curr.attr("opacity", 1);
+        nodes_curr.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+        links_curr.attr("opacity", 0.1);
+
+        let nodes_next = d3.selectAll("#node-group-next>g");
+        let links_next = d3.selectAll("#link-group-next");
+        nodes_next.attr("opacity", 1);
+        nodes_next.filter(d => array_intersect(d["top_classes"].join(", ").split(",").map(x => x.trim().toLowerCase()), selected_labels.map(x => x.toLowerCase())).length === 0).attr("opacity", 0.1);
+        links_next.attr("opacity", 0.1);
       } else {
         resetSelection();
       }
@@ -656,11 +606,12 @@ function make_modal_window() {
   }
 }
 
-function draw_helper() {
+async function draw_helper() {
   let {dataset, layers} = getCurrentParams();
-  draw_mapper(layers[0], dataset, '#mapper-svg-prev', awesomplete_inst, "prev");
-  draw_mapper(layers[1], dataset, '#mapper-svg-curr', awesomplete_inst, "curr");
-  draw_mapper(layers[2], dataset, '#mapper-svg-next', awesomplete_inst, "next");
+  await draw_mapper(layers[0], dataset, '#mapper-svg-prev', awesomplete_inst, "prev");
+  await draw_mapper(layers[1], dataset, '#mapper-svg-curr', awesomplete_inst, "curr");
+  await draw_mapper(layers[2], dataset, '#mapper-svg-next', awesomplete_inst, "next");
+  populateModal();
 }
 
 // Wrapper to call all functions
@@ -672,8 +623,7 @@ async function wrapper() {
     buildLayers();
     buildDatasetDropdown();
     make_modal_window();
-    populateModal();
-    draw_helper();
+    await draw_helper();
 
   } catch (e) {
     console.log(e)
